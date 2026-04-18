@@ -4,16 +4,16 @@
 
 **Goal:** Membangun Minimum Viable Product (MVP) Loketku yang mencakup pembuatan event, halaman pembelian tiket, *dashboard* panitia (dengan *leaderboard*), dan *scanner* QR code.
 
-**Architecture:** Aplikasi web *full-stack* menggunakan Astro sebagai *framework* utama untuk performa dan SEO, React untuk komponen interaktif (seperti *dashboard* dan form), dan TailwindCSS untuk *styling*. Supabase digunakan sebagai *Backend-as-a-Service* (BaaS) untuk Autentikasi dan Database PostgreSQL.
+**Architecture:** Aplikasi web *full-stack* menggunakan Astro sebagai *framework* utama untuk performa dan SEO, React untuk komponen interaktif (seperti *dashboard* dan form), dan TailwindCSS + shadcn/ui untuk *styling* dan komponen UI. Supabase digunakan sebagai *Backend-as-a-Service* (BaaS) untuk Autentikasi dan Database PostgreSQL.
 
-**Tech Stack:** Astro, React, TailwindCSS, Supabase.
+**Tech Stack:** Astro, React, TailwindCSS, shadcn/ui, Supabase.
 
 ---
 
 ### Task 1: Project Scaffolding & Setup
 
 **Files:**
-- Create: `package.json`, `astro.config.mjs`, `tailwind.config.mjs`, dll. (via Astro CLI)
+- Create: `package.json`, `astro.config.mjs`, `tailwind.config.mjs`, `components.json`, dll.
 - Create: `src/lib/supabase.ts`
 
 - [ ] **Step 1: Inisialisasi Proyek Astro**
@@ -23,13 +23,20 @@ npm create astro@latest . -- --template minimal --install --no-git --yes
 npx astro add react tailwind --yes
 ```
 
-- [ ] **Step 2: Install Dependencies Tambahan**
-Install Supabase client dan *library* pendukung lainnya (seperti `lucide-react` untuk icon, `qrcode.react` untuk *generate* QR).
+- [ ] **Step 2: Install Dependencies Tambahan & Inisialisasi shadcn/ui**
+Install Supabase client, library pendukung, dan inisialisasi shadcn/ui.
 ```bash
 npm install @supabase/supabase-js lucide-react qrcode.react
+npx shadcn@latest init -d
 ```
 
-- [ ] **Step 3: Setup Supabase Client**
+- [ ] **Step 3: Install Komponen Dasar shadcn/ui**
+Install komponen-komponen UI yang akan sering digunakan.
+```bash
+npx shadcn@latest add button input card label table
+```
+
+- [ ] **Step 4: Setup Supabase Client**
 Buat file `src/lib/supabase.ts` untuk inisialisasi *client* Supabase.
 ```typescript
 import { createClient } from '@supabase/supabase-js';
@@ -40,11 +47,10 @@ const supabaseKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key
 export const supabase = createClient(supabaseUrl, supabaseKey);
 ```
 
-- [ ] **Step 4: Commit Setup Awal**
+- [ ] **Step 5: Commit Setup Awal**
 ```bash
-git init
 git add .
-git commit -m "chore: initial astro project setup with react, tailwind, and supabase"
+git commit -m "chore: initial astro project setup with react, tailwind, shadcn/ui, and supabase"
 ```
 
 ---
@@ -106,11 +112,15 @@ git commit -m "feat: add initial database schema for events and tickets"
 - Create: `src/components/CreateEventForm.tsx`
 
 - [ ] **Step 1: Buat Komponen Form React**
-Buat `src/components/CreateEventForm.tsx` yang berisi form untuk Nama Event, Tanggal, Lokasi, Harga, dan Kuota. Form ini akan memanggil Supabase untuk menyimpan data.
+Buat `src/components/CreateEventForm.tsx` yang berisi form untuk Nama Event, Tanggal, Lokasi, Harga, dan Kuota. Form ini akan memanggil Supabase untuk menyimpan data dan menggunakan komponen shadcn/ui.
 
 ```tsx
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function CreateEventForm() {
   const [title, setTitle] = useState('');
@@ -118,27 +128,60 @@ export default function CreateEventForm() {
   const [location, setLocation] = useState('');
   const [price, setPrice] = useState('');
   const [quota, setQuota] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     const { data, error } = await supabase
       .from('events')
       .insert([
         { title, date, location, price: parseFloat(price), quota: parseInt(quota), organizer_id: '00000000-0000-0000-0000-000000000000' } // Dummy organizer ID for now
       ]);
+    setLoading(false);
     if (error) console.error(error);
-    else console.log('Event created:', data);
+    else {
+      console.log('Event created:', data);
+      alert('Event created successfully!');
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <input type="text" placeholder="Event Title" value={title} onChange={(e) => setTitle(e.target.value)} className="border p-2 w-full" required />
-      <input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} className="border p-2 w-full" required />
-      <input type="text" placeholder="Location" value={location} onChange={(e) => setLocation(e.target.value)} className="border p-2 w-full" required />
-      <input type="number" placeholder="Price" value={price} onChange={(e) => setPrice(e.target.value)} className="border p-2 w-full" required />
-      <input type="number" placeholder="Quota" value={quota} onChange={(e) => setQuota(e.target.value)} className="border p-2 w-full" required />
-      <button type="submit" className="bg-blue-500 text-white p-2 rounded w-full">Create Event</button>
-    </form>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle>Create New Event</CardTitle>
+        <CardDescription>Fill in the details to publish your event.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="title">Event Title</Label>
+            <Input id="title" placeholder="e.g., Seminar Nasional Tech 2026" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="date">Date & Time</Label>
+            <Input id="date" type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input id="location" placeholder="e.g., Auditorium Kampus" value={location} onChange={(e) => setLocation(e.target.value)} required />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="price">Price (Rp)</Label>
+              <Input id="price" type="number" placeholder="50000" value={price} onChange={(e) => setPrice(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quota">Quota</Label>
+              <Input id="quota" type="number" placeholder="100" value={quota} onChange={(e) => setQuota(e.target.value)} required />
+            </div>
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Creating...' : 'Create Event'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 ```
@@ -149,6 +192,7 @@ Buat `src/pages/create-event.astro` yang me-*render* `<CreateEventForm client:lo
 ```astro
 ---
 import CreateEventForm from '../components/CreateEventForm';
+import '../styles/globals.css'; // Ensure shadcn styles are loaded
 ---
 
 <html lang="en">
@@ -157,11 +201,8 @@ import CreateEventForm from '../components/CreateEventForm';
     <meta name="viewport" content="width=device-width" />
     <title>Create Event - Loketku</title>
   </head>
-  <body class="bg-gray-100 p-8">
-    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h1 class="text-2xl font-bold mb-4">Create New Event</h1>
-      <CreateEventForm client:load />
-    </div>
+  <body class="bg-slate-50 min-h-screen p-8 flex items-center justify-center">
+    <CreateEventForm client:load />
   </body>
 </html>
 ```
@@ -187,6 +228,8 @@ Buat `src/pages/event/[id].astro` yang mengambil data event dari Supabase berdas
 ---
 import { supabase } from '../../lib/supabase';
 import TicketCheckout from '../../components/TicketCheckout';
+import { Calendar, MapPin } from 'lucide-react';
+import '../styles/globals.css';
 
 const { id } = Astro.params;
 
@@ -207,15 +250,31 @@ if (error || !event) {
     <meta name="viewport" content="width=device-width" />
     <title>{event.title} - Loketku</title>
   </head>
-  <body class="bg-gray-100 p-8">
-    <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h1 class="text-3xl font-bold mb-2">{event.title}</h1>
-      <p class="text-gray-600 mb-4">{new Date(event.date).toLocaleString()} | {event.location}</p>
-      <p class="mb-6">{event.description}</p>
-      
-      <div class="border-t pt-6">
-        <h2 class="text-xl font-bold mb-4">Buy Ticket (Rp {event.price})</h2>
-        <TicketCheckout eventId={event.id} client:load />
+  <body class="bg-slate-50 min-h-screen p-4 md:p-8">
+    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-sm border overflow-hidden">
+      <div class="h-48 bg-slate-200 w-full"></div> <!-- Placeholder for event banner -->
+      <div class="p-6 md:p-8">
+        <h1 class="text-3xl font-bold tracking-tight mb-4">{event.title}</h1>
+        
+        <div class="flex flex-col sm:flex-row gap-4 mb-8 text-slate-600">
+          <div class="flex items-center gap-2">
+            <Calendar className="w-5 h-5" />
+            <span>{new Date(event.date).toLocaleString()}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <MapPin className="w-5 h-5" />
+            <span>{event.location}</span>
+          </div>
+        </div>
+        
+        <div class="prose max-w-none mb-8">
+          <p>{event.description || 'No description provided.'}</p>
+        </div>
+        
+        <div class="border-t pt-8 mt-8">
+          <h2 class="text-2xl font-bold mb-6">Get Your Tickets</h2>
+          <TicketCheckout eventId={event.id} price={event.price} client:load />
+        </div>
       </div>
     </div>
   </body>
@@ -228,8 +287,12 @@ Buat `src/components/TicketCheckout.tsx` yang berisi form data pembeli (Nama, Em
 ```tsx
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent } from '@/components/ui/card';
 
-export default function TicketCheckout({ eventId }: { eventId: string }) {
+export default function TicketCheckout({ eventId, price }: { eventId: string, price: number }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -269,18 +332,46 @@ export default function TicketCheckout({ eventId }: { eventId: string }) {
   };
 
   if (success) {
-    return <div class="p-4 bg-green-100 text-green-800 rounded">Ticket purchased successfully! Check your email.</div>;
+    return (
+      <Card className="bg-green-50 border-green-200">
+        <CardContent className="pt-6 text-center">
+          <div className="text-green-600 font-semibold mb-2">Ticket purchased successfully!</div>
+          <p className="text-sm text-green-700">We've sent the e-ticket to your email and WhatsApp.</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
     <form onSubmit={handleCheckout} className="space-y-4">
-      <input type="text" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} className="border p-2 w-full" required />
-      <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="border p-2 w-full" required />
-      <input type="tel" placeholder="WhatsApp Number" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className="border p-2 w-full" required />
-      <input type="text" placeholder="Referral Code (Optional)" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} className="border p-2 w-full" />
-      <button type="submit" disabled={loading} className="bg-green-500 text-white p-2 rounded w-full font-bold">
-        {loading ? 'Processing...' : 'Pay Now'}
-      </button>
+      <div className="space-y-2">
+        <Label htmlFor="name">Full Name</Label>
+        <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email Address</Label>
+          <Input id="email" type="email" placeholder="john@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="whatsapp">WhatsApp Number</Label>
+          <Input id="whatsapp" type="tel" placeholder="081234567890" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} required />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="referral">Referral Code (Optional)</Label>
+        <Input id="referral" placeholder="e.g., PANITIA-BUDI" value={referralCode} onChange={(e) => setReferralCode(e.target.value)} />
+      </div>
+      
+      <div className="pt-4 flex items-center justify-between border-t mt-6">
+        <div>
+          <p className="text-sm text-slate-500">Total Payment</p>
+          <p className="text-2xl font-bold">Rp {price.toLocaleString()}</p>
+        </div>
+        <Button type="submit" size="lg" disabled={loading}>
+          {loading ? 'Processing...' : 'Pay Now'}
+        </Button>
+      </div>
     </form>
   );
 }
@@ -308,6 +399,9 @@ Buat komponen React untuk menampilkan total tiket terjual, total pendapatan, dan
 // src/components/DashboardStats.tsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Ticket, DollarSign, Trophy } from 'lucide-react';
 
 export function DashboardStats({ eventId }: { eventId: string }) {
   const [stats, setStats] = useState({ ticketsSold: 0, revenue: 0 });
@@ -335,15 +429,25 @@ export function DashboardStats({ eventId }: { eventId: string }) {
   }, [eventId]);
 
   return (
-    <div className="grid grid-cols-2 gap-4 mb-8">
-      <div className="bg-white p-4 rounded shadow">
-        <h3 className="text-gray-500 text-sm">Tickets Sold</h3>
-        <p className="text-2xl font-bold">{stats.ticketsSold}</p>
-      </div>
-      <div className="bg-white p-4 rounded shadow">
-        <h3 className="text-gray-500 text-sm">Total Revenue</h3>
-        <p className="text-2xl font-bold">Rp {stats.revenue.toLocaleString()}</p>
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Tickets Sold</CardTitle>
+          <Ticket className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{stats.ticketsSold}</div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+          <DollarSign className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">Rp {stats.revenue.toLocaleString()}</div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -380,28 +484,41 @@ export function Leaderboard({ eventId }: { eventId: string }) {
   }, [eventId]);
 
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <h3 className="text-lg font-bold mb-4">Referral Leaderboard</h3>
-      <table className="w-full text-left">
-        <thead>
-          <tr className="border-b">
-            <th className="pb-2">Referral Code</th>
-            <th className="pb-2">Tickets Sold</th>
-          </tr>
-        </thead>
-        <tbody>
-          {leaderboard.map((item, index) => (
-            <tr key={item.code} className="border-b last:border-0">
-              <td className="py-2">{item.code}</td>
-              <td className="py-2 font-bold">{item.count}</td>
-            </tr>
-          ))}
-          {leaderboard.length === 0 && (
-            <tr><td colSpan={2} className="py-4 text-center text-gray-500">No referrals yet</td></tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Trophy className="h-5 w-5 text-yellow-500" />
+          Referral Leaderboard
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Rank</TableHead>
+              <TableHead>Referral Code</TableHead>
+              <TableHead className="text-right">Tickets Sold</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {leaderboard.map((item, index) => (
+              <TableRow key={item.code}>
+                <TableCell className="font-medium">{index + 1}</TableCell>
+                <TableCell>{item.code}</TableCell>
+                <TableCell className="text-right font-bold">{item.count}</TableCell>
+              </TableRow>
+            ))}
+            {leaderboard.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                  No referrals yet.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }
 ```
@@ -413,6 +530,7 @@ Buat `src/pages/dashboard/[id].astro` yang menggabungkan komponen-komponen terse
 ---
 import { supabase } from '../../lib/supabase';
 import { DashboardStats, Leaderboard } from '../../components/DashboardStats'; // Assuming both are exported from here for simplicity
+import '../styles/globals.css';
 
 const { id } = Astro.params;
 
@@ -433,9 +551,14 @@ if (error || !event) {
     <meta name="viewport" content="width=device-width" />
     <title>Dashboard: {event.title} - Loketku</title>
   </head>
-  <body class="bg-gray-100 p-8">
+  <body class="bg-slate-50 min-h-screen p-4 md:p-8">
     <div class="max-w-4xl mx-auto">
-      <h1 class="text-3xl font-bold mb-6">Dashboard: {event.title}</h1>
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p class="text-slate-500">{event.title}</p>
+        </div>
+      </div>
       
       <DashboardStats eventId={event.id} client:load />
       <Leaderboard eventId={event.id} client:load />
@@ -467,6 +590,7 @@ Buat `src/pages/ticket/[id].astro` yang menampilkan detail tiket dan QR Code (me
 ---
 import { supabase } from '../../lib/supabase';
 import { QRCodeSVG } from 'qrcode.react';
+import '../styles/globals.css';
 
 const { id } = Astro.params;
 
@@ -487,24 +611,34 @@ if (error || !ticket) {
     <meta name="viewport" content="width=device-width" />
     <title>Your Ticket - Loketku</title>
   </head>
-  <body class="bg-gray-100 p-8 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-sm w-full text-center border-t-8 border-blue-500">
-      <h1 class="text-2xl font-bold mb-2">{ticket.events.title}</h1>
-      <p class="text-gray-600 mb-6">{new Date(ticket.events.date).toLocaleString()}</p>
+  <body class="bg-slate-50 p-4 md:p-8 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-xl shadow-sm border max-w-sm w-full text-center relative overflow-hidden">
+      <div class="absolute top-0 left-0 w-full h-2 bg-primary"></div>
       
-      <div class="flex justify-center mb-6 p-4 bg-gray-50 rounded-lg">
+      <h1 class="text-2xl font-bold tracking-tight mb-2 mt-2">{ticket.events.title}</h1>
+      <p class="text-muted-foreground mb-8">{new Date(ticket.events.date).toLocaleString()}</p>
+      
+      <div class="flex justify-center mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
         <QRCodeSVG value={ticket.id} size={200} />
       </div>
       
-      <div class="text-left border-t pt-4">
-        <p class="text-sm text-gray-500">Name</p>
-        <p class="font-bold mb-2">{ticket.buyer_name}</p>
+      <div class="text-left border-t pt-6 border-dashed">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Name</p>
+            <p class="font-medium">{ticket.buyer_name}</p>
+          </div>
+          <div>
+            <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Status</p>
+            <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+              {ticket.status.toUpperCase()}
+            </div>
+          </div>
+        </div>
         
-        <p class="text-sm text-gray-500">Ticket ID</p>
-        <p class="font-mono text-xs">{ticket.id}</p>
-        
-        <div class="mt-4 inline-block px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-800">
-          {ticket.status.toUpperCase()}
+        <div class="mt-4">
+          <p class="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-1">Ticket ID</p>
+          <p class="font-mono text-xs text-slate-600">{ticket.id}</p>
         </div>
       </div>
     </div>
@@ -518,6 +652,10 @@ Buat `src/components/QRScanner.tsx` (bisa menggunakan *library* seperti `html5-q
 ```tsx
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScanLine, CheckCircle2, XCircle } from 'lucide-react';
 
 export default function QRScanner() {
   const [ticketId, setTicketId] = useState('');
@@ -575,30 +713,43 @@ export default function QRScanner() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4">Manual Ticket Scanner</h2>
-      <p className="text-sm text-gray-500 mb-4">For MVP, enter the Ticket ID manually instead of scanning a QR code.</p>
-      
-      <form onSubmit={handleScan} className="space-y-4">
-        <input 
-          type="text" 
-          placeholder="Enter Ticket ID (UUID)" 
-          value={ticketId} 
-          onChange={(e) => setTicketId(e.target.value)} 
-          className="border p-2 w-full font-mono text-sm" 
-          required 
-        />
-        <button type="submit" disabled={loading} className="bg-blue-500 text-white p-2 rounded w-full font-bold">
-          {loading ? 'Checking...' : 'Check In'}
-        </button>
-      </form>
-      
-      {result && (
-        <div className={`mt-6 p-4 rounded-lg font-bold ${result.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-          {result.message}
-        </div>
-      )}
-    </div>
+    <Card className="max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <ScanLine className="h-5 w-5" />
+          Manual Ticket Scanner
+        </CardTitle>
+        <CardDescription>
+          For MVP, enter the Ticket ID manually instead of scanning a QR code.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleScan} className="space-y-4">
+          <Input 
+            type="text" 
+            placeholder="Enter Ticket ID (UUID)" 
+            value={ticketId} 
+            onChange={(e) => setTicketId(e.target.value)} 
+            className="font-mono text-sm" 
+            required 
+          />
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? 'Checking...' : 'Check In'}
+          </Button>
+        </form>
+        
+        {result && (
+          <div className={`mt-6 p-4 rounded-lg flex items-start gap-3 ${result.success ? 'bg-green-50 text-green-900 border border-green-200' : 'bg-red-50 text-red-900 border border-red-200'}`}>
+            {result.success ? (
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
+            ) : (
+              <XCircle className="h-5 w-5 text-red-600 mt-0.5" />
+            )}
+            <div className="font-medium">{result.message}</div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 ```
@@ -609,6 +760,7 @@ Buat `src/pages/scan.astro` yang me-*render* komponen scanner.
 ```astro
 ---
 import QRScanner from '../components/QRScanner';
+import '../styles/globals.css';
 ---
 
 <html lang="en">
@@ -617,8 +769,10 @@ import QRScanner from '../components/QRScanner';
     <meta name="viewport" content="width=device-width" />
     <title>Scanner - Loketku</title>
   </head>
-  <body class="bg-gray-100 p-8">
-    <QRScanner client:load />
+  <body class="bg-slate-50 min-h-screen p-4 md:p-8 flex items-center justify-center">
+    <div class="w-full">
+      <QRScanner client:load />
+    </div>
   </body>
 </html>
 ```
