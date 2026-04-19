@@ -82,14 +82,17 @@ Pastikan responden yang Anda wawancarai memenuhi kriteria berikut agar *insight*
 
 **URL Production:** https://loketku-mvp.vercel.app/
 
+**Quick Reference:** Buka file `DEMO_WAWANCARA.md` untuk step-by-step demo!
+
 **Credentials Demo:**
 - Login organizer: `admin@loketku.com` / `admin123`
 - Demo event publik: `/event/demo`
 
 **Catatan:**
-- Data tersimpan di memory — hilang jika Vercel restart
-- Untuk wawancara, buat event baru setiap kali demo
+- Data tersimpan di localStorage browser — persist sampai clear cache
+- **PENTING:** Gunakan browser yang sama dari create → buy → scan
 - QR code adalah placeholder CSS (belum generate QR real)
+- Payment masih simulasi (untuk production: QRIS/VA)
 
 ---
 
