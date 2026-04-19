@@ -1,0 +1,21 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { QRScanner } from '../../../components/tickets/QRScanner';
+
+const { id } = Astro.params;
+---
+
+<Layout title="Scanner Tiket - Loketku">
+  <main className="container mx-auto py-8 px-4">
+    <div className="mb-8 text-center">
+      <h1 className="text-3xl font-bold tracking-tight">Scanner Tiket</h1>
+      <p className="text-muted-foreground">Arahkan kamera ke QR Code pada tiket pengunjung.</p>
+    </div>
+    
+    {id ? (
+      <QRScanner eventId={id} client:only="react" />
+    ) : (
+      <div className="text-center text-destructive">ID Event tidak valid</div>
+    )}
+  </main>
+</Layout>

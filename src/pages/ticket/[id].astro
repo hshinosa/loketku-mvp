@@ -1,0 +1,16 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { ETicket } from '../../components/tickets/ETicket';
+
+const { id } = Astro.params;
+---
+
+<Layout title="E-Ticket Anda - Loketku">
+  <main className="container mx-auto py-8 px-4">
+    {id ? (
+      <ETicket ticketId={id} client:load />
+    ) : (
+      <div className="text-center text-destructive">ID Tiket tidak valid</div>
+    )}
+  </main>
+</Layout>
