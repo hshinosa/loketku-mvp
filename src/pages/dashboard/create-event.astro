@@ -1,0 +1,15 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { CreateEventForm } from '../../components/events/CreateEventForm';
+---
+
+<Layout title="Buat Event Baru - Loketku">
+  <main className="container mx-auto py-8 px-4">
+    <div className="mb-8">
+      <h1 className="text-3xl font-bold tracking-tight">Dashboard Panitia</h1>
+      <p className="text-muted-foreground">Kelola event dan tiket Anda di sini.</p>
+    </div>
+    
+    <CreateEventForm client:load />
+  </main>
+</Layout>
