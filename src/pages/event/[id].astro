@@ -1,0 +1,19 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { EventLanding } from '../../components/events/EventLanding';
+
+const { id } = Astro.params;
+
+// In a real app, we would fetch the event title for the meta tag here
+// For MVP, we'll just use a generic title
+---
+
+<Layout title="Detail Event - Loketku">
+  <main className="container mx-auto py-8 px-4">
+    {id ? (
+      <EventLanding eventId={id} client:load />
+    ) : (
+      <div className="text-center text-destructive">ID Event tidak valid</div>
+    )}
+  </main>
+</Layout>
