@@ -14,10 +14,24 @@ Pastikan responden yang Anda wawancarai memenuhi kriteria berikut agar *insight*
 *   **Nilai Plus:** Pernah menggunakan metode manual (Google Form + WhatsApp) untuk menjual tiket.
 
 ## ⚙️ Aturan Main Wawancara (Do's & Don'ts)
-*   **DO:** Biarkan responden bercerita lebih banyak (aturan 80/20: mereka bicara 80%, Anda 20%).
-*   **DO:** Gali emosi mereka saat menceritakan masalah (tanyakan "kenapa itu menyebalkan?").
-*   **DON'T:** Jangan langsung "menjual" ide Loketku di awal. Gali masalahnya dulu.
-*   **DON'T:** Jangan arahkan jawaban mereka (hindari pertanyaan *leading* seperti "Pasti capek kan cek mutasi manual?").
+* **DO:** Biarkan responden bercerita lebih banyak (aturan 80/20: mereka bicara 80%, Anda 20%).
+* **DO:** Gali emosi mereka saat menceritakan masalah (tanyakan "kenapa itu menyebalkan?").
+* **DON'T:** Jangan langsung "menjual" ide Loketku di awal. Gali masalahnya dulu.
+* **DON'T:** Jangan arahkan jawaban mereka (hindari pertanyaan *leading* seperti "Pasti capek kan cek mutasi manual?").
+
+## 💻 Demo Prototype (Untuk Wawancara)
+**PENTING:** MVP yang tersedia adalah **click-through prototype** tanpa integrasi pembayaran nyata. Gunakan untuk menunjukkan flow, bukan untuk transaksi real.
+
+**Flow Demo yang Tersedia:**
+1. Login organizer: `admin@loketku.com` / `admin123`
+2. Create event → dapat link publik
+3. Buka link publik → simulasi beli tiket (tanpa pembayaran)
+4. Tampil e-ticket dengan QR code
+5. Dashboard organizer: lihat stats penjualan
+6. Scanner: simulasi check-in QR code
+
+**Cara Sampaikan ke Responden:**
+> "Ini adalah prototype yang bisa kamu klik. Untuk demo hari ini, pembayaran kami simulasi saja — tapi flow-nya sama seperti produk final yang akan terintegrasi QRIS/VA."
 
 ---
 
@@ -42,22 +56,40 @@ Pastikan responden yang Anda wawancarai memenuhi kriteria berikut agar *insight*
 ### Sesi 3: Menguji Solusi / Solution Fit (5 Menit)
 *Tujuan: Memperkenalkan konsep Loketku dan melihat reaksi mereka terhadap solusi.*
 
-7. "Oke, bayangin kalau sekarang ada sebuah platform web. Kamu tinggal masukin nama event, harga tiket, dan kuota. Terus platform ini ngasih kamu satu link."
-8. "Peserta tinggal klik link itu, bayar pakai QRIS atau Virtual Account, dan sistem otomatis ngecek pembayarannya. Kalau sukses, peserta langsung dapat e-ticket (QR Code) di email mereka. Kamu sebagai panitia tinggal lihat *dashboard* aja siapa yang udah bayar."
-9. "Menurut kamu, apakah sistem seperti ini bakal menyelesaikan masalah-masalah yang kamu ceritain tadi?"
-10. "Dari fitur yang aku sebutin tadi, bagian mana yang menurut kamu paling ngebantu banget buat panitia?"
-11. "Kira-kira, ada nggak alasan yang bikin kamu atau panitia lain *ragu* buat pakai sistem kayak gini? (Misal: takut uangnya nyangkut, gaptek, dll)."
+**[DEMO MODE: Tunjukkan prototype langsung]**
+
+7. "Oke, aku tunjukin prototype Loketku yang sudah bisa dipakai. Kamu tinggal masukin nama event, harga tiket, dan kuota. Terus platform ini ngasih kamu satu link."
+8. "Peserta tinggal klik link itu, isi nama & email, bayar pakai QRIS atau Virtual Account *(note: untuk demo ini pembayaran masih simulasi)*, dan sistem otomatis ngecek pembayarannya. Kalau sukses, peserta langsung dapat e-ticket (QR Code) yang bisa ditunjukkan di lokasi."
+9. "Kamu sebagai panitia tinggal lihat *dashboard* aja siapa yang udah bayar, berapa tiket terjual, dan bisa scan QR code di lokasi untuk check-in."
+10. "Menurut kamu, apakah sistem seperti ini bakal menyelesaikan masalah-masalah yang kamu ceritain tadi?"
+11. "Dari fitur yang aku tunjukin tadi, bagian mana yang menurut kamu paling ngebantu banget buat panitia?"
+12. "Kira-kira, ada nggak alasan yang bikin kamu atau panitia lain *ragu* buat pakai sistem kayak gini? (Misal: takut uangnya nyangkut, gaptek, dll)."
 
 ### Sesi 4: Menguji Unique Value Proposition / UVP (3 Menit)
 *Tujuan: Menguji daya tarik janji utama produk.*
 
-12. "Platform ini namanya **Loketku**. Janji utama (UVP) kami ke panitia adalah: **'Platform tiket event kampus dengan pencairan dana harian dan pelacakan jualan panitia otomatis. Bebas pusing cek mutasi, uang langsung bisa dipakai buat DP vendor.'**"
-13. "Pas denger kalimat itu, apakah kamu tertarik buat langsung pakai Loketku di event kamu selanjutnya?"
-14. "Kenapa tertarik? / Kenapa nggak tertarik?"
-15. "Kalau misalnya Loketku ngambil biaya admin Rp 2.000 - Rp 3.000 per tiket (yang dibebankan ke pembeli tiket, bukan ke panitia), menurut kamu itu wajar nggak?"
+13. "Platform ini namanya **Loketku**. Janji utama (UVP) kami ke panitia adalah: **'Platform tiket event kampus dengan pencairan dana harian dan pelacakan jualan panitia otomatis. Bebas pusing cek mutasi, uang langsung bisa dipakai buat DP vendor.'**"
+14. "Pas denger kalimat itu, apakah kamu tertarik buat langsung pakai Loketku di event kamu selanjutnya?"
+15. "Kenapa tertarik? / Kenapa nggak tertarik?"
+16. "Kalau misalnya Loketku ngambil biaya admin Rp 2.000 - Rp 3.000 per tiket (yang dibebankan ke pembeli tiket, bukan ke panitia), menurut kamu itu wajar nggak?"
 
 ### Penutup
 "Terima kasih banyak ya [Nama] buat waktunya. *Insight* dari kamu ngebantu banget buat riset aku!"
+
+---
+
+## 🔗 Link Demo Prototype
+
+**URL Production:** https://loketku-mvp.vercel.app/
+
+**Credentials Demo:**
+- Login organizer: `admin@loketku.com` / `admin123`
+- Demo event publik: `/event/demo`
+
+**Catatan:**
+- Data tersimpan di memory — hilang jika Vercel restart
+- Untuk wawancara, buat event baru setiap kali demo
+- QR code adalah placeholder CSS (belum generate QR real)
 
 ---
 
