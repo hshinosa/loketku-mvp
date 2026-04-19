@@ -1,0 +1,16 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { OrganizerDashboard } from '../../components/dashboard/OrganizerDashboard';
+
+const { id } = Astro.params;
+---
+
+<Layout title="Dashboard Event - Loketku">
+  <main className="container mx-auto py-8 px-4">
+    {id ? (
+      <OrganizerDashboard eventId={id} client:load />
+    ) : (
+      <div className="text-center text-destructive">ID Event tidak valid</div>
+    )}
+  </main>
+</Layout>
