@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getDashboardSnapshot } from '@/lib/api';
+import { getDashboardSnapshot } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { TicketIcon, UsersIcon, BanknoteIcon, TrendingUpIcon, ClockIcon } from 'lucide-react';

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getTicketById, getEventById } from '@/lib/api';
+import { getTicketById, getEventById } from '@/lib/storage';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
