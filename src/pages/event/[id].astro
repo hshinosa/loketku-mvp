@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { EventLanding } from '../../components/events/EventLanding';
 
+export const prerender = false;
+
 const { id } = Astro.params;
 
 // In a real app, we would fetch the event title for the meta tag here
