@@ -1,14 +1,18 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { CreateEventForm } from '../../components/events/CreateEventForm';
+import DashboardTopbar from '../../components/dashboard/DashboardTopbar.astro';
+
+export const prerender = false;
 ---
 
 <Layout title="Buat Event Baru - Loketku">
-  <main className="container mx-auto py-8 px-4">
-    <div className="mb-8">
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard Panitia</h1>
-      <p className="text-muted-foreground">Kelola event dan tiket Anda di sini.</p>
-    </div>
+  <main className="container mx-auto px-4 py-6 sm:py-7">
+    <DashboardTopbar>
+      <h1 slot="title" className="text-3xl font-bold tracking-tight text-slate-900">Dashboard Panitia</h1>
+      <p slot="description" className="mt-1 text-slate-500">Kelola event dan tiket Anda di sini.</p>
+      <div slot="actions" className="hidden sm:flex" />
+    </DashboardTopbar>
     
     <CreateEventForm client:load />
   </main>

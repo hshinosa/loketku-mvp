@@ -1,203 +1,182 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { getDashboardSnapshot } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-
-interface Event {
-  id: string;
-  title: string;
-  ticket_price: number;
-  total_tickets: number;
-}
-
-interface Ticket {
-  id: string;
-  buyer_name: string;
-  buyer_email: string;
-  status: string;
-  created_at: string;
-}
-
-interface ReferralStats {
-  code: string;
-  owner_name: string;
-  ticket_count: number;
-}
+import { TicketIcon, UsersIcon, BanknoteIcon, TrendingUpIcon, ClockIcon } from 'lucide-react';
 
 export function OrganizerDashboard({ eventId }: { eventId: string }) {
-  const [event, setEvent] = useState<Event | null>(null);
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [referralStats, setReferralStats] = useState<ReferralStats[]>([]);
+  const [snapshot, setSnapshot] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchDashboardData() {
+    async function fetchSnapshot() {
       try {
-        const { data: eventData, error: eventError } = await supabase
-          .from('events')
-          .select('id, title, ticket_price, total_tickets')
-          .eq('id', eventId)
-          .single();
-
-        if (eventError) throw eventError;
-        setEvent(eventData);
-
-        const { data: ticketsData, error: ticketsError } = await supabase
-          .from('tickets')
-          .select('id, buyer_name, buyer_email, status, created_at')
-          .eq('event_id', eventId)
-          .order('created_at', { ascending: false });
-
-        if (ticketsError) throw ticketsError;
-        setTickets(ticketsData || []);
-
-        const { data: refData, error: refError } = await supabase
-          .from('referrals')
-          .select(`
-            code,
-            owner_name,
-            tickets (count)
-          `)
-          .eq('event_id', eventId);
-
-        if (refError) throw refError;
-
-        const formattedStats = (refData || []).map((ref: any) => ({
-          code: ref.code,
-          owner_name: ref.owner_name,
-          ticket_count: ref.tickets[0].count
-        })).sort((a, b) => b.ticket_count - a.ticket_count);
-
-        setReferralStats(formattedStats);
+        const data = await getDashboardSnapshot(eventId);
+        setSnapshot(data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
         setIsLoading(false);
       }
     }
-
-    fetchDashboardData();
+    fetchSnapshot();
   }, [eventId]);
 
   if (isLoading) {
-    return <div className="flex justify-center p-8">Memuat dashboard...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-muted-foreground animate-pulse">Memuat dashboard...</p>
+      </div>
+    );
   }
 
-  if (!event) {
-    return <div className="flex justify-center p-8 text-destructive">Event tidak ditemukan.</div>;
+  if (!snapshot || !snapshot.event) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+          <span className="text-2xl font-bold">!</span>
+        </div>
+        <h2 className="text-2xl font-bold">Event Tidak Ditemukan</h2>
+        <p className="text-muted-foreground">Data event tidak dapat dimuat.</p>
+      </div>
+    );
   }
 
-  const totalRevenue = tickets.length * event.ticket_price;
-  const formattedRevenue = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(totalRevenue);
+  const event = snapshot.event;
+  const formattedRevenue = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(snapshot.totalRevenue);
+  const remainingTickets = snapshot.remainingTickets;
+  const checkedInTickets = snapshot.checkInStats.used;
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">{event.title}</h2>
-        <Button variant="outline" onClick={() => window.open(`/event/${event.id}`, '_blank')}>
-          Lihat Halaman Event
-        </Button>
+    <div className="space-y-6 max-w-7xl mx-auto px-4 pb-8">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-3xl font-bold tracking-tight text-slate-900">{event.title}</h2>
+        <p className="text-slate-500">Dashboard Organizer</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+          <div className="bg-blue-500 h-1 w-full"></div>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pendapatan</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-600">Total Pendapatan</CardTitle>
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+              <BanknoteIcon className="w-4 h-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formattedRevenue}</div>
+            <div className="text-3xl font-bold text-slate-900">{formattedRevenue}</div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+          <div className="bg-green-500 h-1 w-full"></div>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tiket Terjual</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-600">Tiket Terjual</CardTitle>
+            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+              <TrendingUpIcon className="w-4 h-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{tickets.length}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-slate-900">{tickets.length}</div>
+            <p className="text-sm text-slate-500 mt-1 font-medium">
               dari {event.total_tickets} tiket
             </p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+          <div className="bg-amber-500 h-1 w-full"></div>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sisa Tiket</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-600">Sisa Tiket</CardTitle>
+            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
+              <TicketIcon className="w-4 h-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{event.total_tickets - tickets.length}</div>
+            <div className="text-3xl font-bold text-slate-900">{remainingTickets}</div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Leaderboard Panitia</CardTitle>
-            <CardDescription>Penjualan tiket berdasarkan kode referral.</CardDescription>
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="border-slate-200 shadow-sm rounded-2xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 rounded-t-2xl pb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
+                <UsersIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <CardTitle>Ringkasan Check-in</CardTitle>
+                <CardDescription>Status kehadiran peserta pada event ini.</CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-slate-50">
                 <TableRow>
-                  <TableHead>Nama Panitia</TableHead>
-                  <TableHead>Kode</TableHead>
-                  <TableHead className="text-right">Terjual</TableHead>
+                  <TableHead className="pl-6">Status</TableHead>
+                  <TableHead className="text-right pr-6">Jumlah</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {referralStats.length === 0 ? (
+                <TableRow>
+                  <TableCell className="pl-6 font-medium">Check-in sukses</TableCell>
+                  <TableCell className="text-right pr-6 font-bold text-slate-700">{checkedInTickets}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell className="pl-6 font-medium">Belum check-in</TableCell>
+                  <TableCell className="text-right pr-6 font-bold text-slate-700">{tickets.length - checkedInTickets}</TableCell>
+                </TableRow>
+                {tickets.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">
-                      Belum ada data referral
+                    <TableCell colSpan={2} className="h-32 text-center text-slate-500">
+                      Belum ada tiket terjual
                     </TableCell>
                   </TableRow>
-                ) : (
-                  referralStats.map((stat) => (
-                    <TableRow key={stat.code}>
-                      <TableCell className="font-medium">{stat.owner_name}</TableCell>
-                      <TableCell>{stat.code}</TableCell>
-                      <TableCell className="text-right">{stat.ticket_count}</TableCell>
-                    </TableRow>
-                  ))
                 )}
               </TableBody>
             </Table>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Daftar Pembeli Terbaru</CardTitle>
-            <CardDescription>5 transaksi terakhir.</CardDescription>
+        <Card className="border-slate-200 shadow-sm rounded-2xl">
+          <CardHeader className="border-b border-slate-100 bg-slate-50/50 rounded-t-2xl pb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                <ClockIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <CardTitle>Daftar Pembeli Terbaru</CardTitle>
+                <CardDescription>5 transaksi terakhir.</CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-0">
             <Table>
-              <TableHeader>
+              <TableHeader className="bg-slate-50">
                 <TableRow>
-                  <TableHead>Nama</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Waktu</TableHead>
+                  <TableHead className="pl-6">Nama</TableHead>
+                  <TableHead className="text-right pr-6">Waktu</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {tickets.length === 0 ? (
+                {snapshot.recentPurchases.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-muted-foreground">
+                    <TableCell colSpan={2} className="h-32 text-center text-slate-500">
                       Belum ada tiket terjual
                     </TableCell>
                   </TableRow>
                 ) : (
-                  tickets.slice(0, 5).map((ticket) => (
-                    <TableRow key={ticket.id}>
-                      <TableCell className="font-medium">{ticket.buyer_name}</TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-green-100 text-green-800">
-                          {ticket.status}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {new Date(ticket.created_at).toLocaleDateString('id-ID')}
+                  snapshot.recentPurchases.map((purchase: any) => (
+                    <TableRow key={purchase.id} className="hover:bg-slate-50/50">
+                      <TableCell className="pl-6 font-medium text-slate-700">{purchase.buyer_name}</TableCell>
+                      <TableCell className="text-right pr-6 text-sm text-slate-500">
+                        {new Date(purchase.purchased_at).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </TableCell>
                     </TableRow>
                   ))

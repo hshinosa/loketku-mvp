@@ -1,0 +1,56 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { Auth } from '../../components/auth/Auth';
+
+export const prerender = false;
+
+// Check if already logged in (check session cookie)
+const sessionCookie = Astro.cookies.get('loketku_session');
+
+if (sessionCookie) {
+  return Astro.redirect('/dashboard/create-event');
+}
+---
+
+<Layout title="Login - Loketku">
+  <main class="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.04),_transparent_42%),linear-gradient(180deg,#f8fafc_0%,#ffffff_48%,#f8fafc_100%)] px-4 py-8 sm:px-6 lg:px-8">
+    <div class="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
+      <section class="grid w-full gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+        <div class="space-y-6 text-center lg:text-left">
+          <div class="inline-flex items-center rounded-full border border-slate-200 bg-white/80 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-500 shadow-sm backdrop-blur">
+            Loketku Organizer Access
+          </div>
+
+          <div class="space-y-3">
+            <h1 class="text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">Loketku</h1>
+            <p class="max-w-xl text-base leading-7 text-slate-600 sm:text-lg">
+              Platform micro-ticketing untuk organizer yang ingin langsung jalan: buat event, jual tiket, dan cek masuk tanpa setup yang bertele-tele.
+            </p>
+          </div>
+
+          <div class="grid gap-3 sm:grid-cols-3 lg:max-w-2xl">
+            <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+              <p class="text-sm font-semibold text-slate-900">Create</p>
+              <p class="mt-1 text-sm leading-6 text-slate-600">Buat event dan publikasi link dalam hitungan menit.</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+              <p class="text-sm font-semibold text-slate-900">Sell</p>
+              <p class="mt-1 text-sm leading-6 text-slate-600">Pembeli langsung checkout di halaman publik.</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm backdrop-blur">
+              <p class="text-sm font-semibold text-slate-900">Check-in</p>
+              <p class="mt-1 text-sm leading-6 text-slate-600">Validasi tiket saat pintu masuk dengan scanner.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mx-auto w-full max-w-md">
+          <Auth client:load />
+          <p class="mt-6 text-center text-sm text-slate-500">
+            © 2026 Loketku. Dibuat untuk event kampus yang lebih mudah.
+          </p>
+        </div>
+      </section>
+    </div>
+  </main>
+</Layout>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { supabase } from '@/lib/supabase';
+import { getTicketById, markTicketUsed } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -9,7 +9,10 @@ export function QRScanner({ eventId }: { eventId: string }) {
   const [ticketStatus, setTicketStatus] = useState<{
     valid: boolean;
     message: string;
-    ticket?: any;
+    ticket?: {
+      id: string;
+      buyer_name: string;
+    };
   } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -41,14 +44,9 @@ export function QRScanner({ eventId }: { eventId: string }) {
   async function verifyTicket(ticketId: string) {
     setIsProcessing(true);
     try {
-      const { data: ticket, error } = await supabase
-        .from('tickets')
-        .select('*')
-        .eq('id', ticketId)
-        .eq('event_id', eventId)
-        .single();
+      const ticket = await getTicketById(ticketId);
 
-      if (error || !ticket) {
+      if (!ticket || ticket.event_id !== eventId) {
         setTicketStatus({
           valid: false,
           message: 'Tiket tidak ditemukan atau tidak valid untuk event ini.'
@@ -60,22 +58,23 @@ export function QRScanner({ eventId }: { eventId: string }) {
         setTicketStatus({
           valid: false,
           message: 'Tiket sudah digunakan sebelumnya!',
-          ticket
+          ticket: {
+            id: ticket.id,
+            buyer_name: ticket.buyer_name,
+          }
         });
         return;
       }
 
-      const { error: updateError } = await supabase
-        .from('tickets')
-        .update({ status: 'used' })
-        .eq('id', ticketId);
-
-      if (updateError) throw updateError;
+      await markTicketUsed(ticketId);
 
       setTicketStatus({
         valid: true,
         message: 'Tiket valid! Berhasil check-in.',
-        ticket
+        ticket: {
+          id: ticket.id,
+          buyer_name: ticket.buyer_name,
+        }
       });
 
     } catch (error) {
@@ -99,7 +98,7 @@ export function QRScanner({ eventId }: { eventId: string }) {
     <Card className="w-full max-w-md mx-auto mt-8">
       <CardHeader>
         <CardTitle>Scanner Tiket</CardTitle>
-        <CardDescription>Scan QR code pada e-ticket pengunjung.</CardDescription>
+        <CardDescription>Scan QR code pada e-ticket pengunjung untuk check-in.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         
@@ -125,6 +124,9 @@ export function QRScanner({ eventId }: { eventId: string }) {
                 
                 <Button onClick={resetScanner} className="w-full">
                   Scan Tiket Berikutnya
+                </Button>
+                <Button onClick={() => window.location.href = '/'} variant="outline" className="w-full mt-2">
+                  ← Kembali ke Homepage
                 </Button>
               </div>
             ) : null}

@@ -22,3 +22,29 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Playwright
+.playwright-mcp/
+test-results/
+*.png
+*.log
+
+# SQLite database
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Test files
+*.e2e.js
+*.test.js
+test-*.js
+quick-test.js
+debug-*.js
+
+# Misc
+console-errors.log
+dev.log
+dashboard-navbar-polish-snapshot.md
+dashboard-snapshot.md
+login-snapshot.md
+AUTH_SETUP.md

@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { OrganizerDashboard } from '../../components/dashboard/OrganizerDashboard';
+import DashboardTopbar from '../../components/dashboard/DashboardTopbar.astro';
 
 export const prerender = false;
 
@@ -8,7 +9,17 @@ const { id } = Astro.params;
 ---
 
 <Layout title="Dashboard Event - Loketku">
-  <main className="container mx-auto py-8 px-4">
+  <main className="container mx-auto px-4 py-6 sm:py-7">
+    <DashboardTopbar>
+      <h1 slot="title" className="text-3xl font-bold tracking-tight text-slate-900">Dashboard Panitia</h1>
+      <p slot="description" className="mt-1 text-slate-500">Kelola event dan tiket Anda di sini.</p>
+      <div slot="actions">
+        <button className="inline-flex h-10 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-4 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-100">
+          Event ID: {id}
+        </button>
+      </div>
+    </DashboardTopbar>
+    
     {id ? (
       <OrganizerDashboard eventId={id} client:load />
     ) : (
